@@ -6,7 +6,7 @@ namespace kursah_5semestr.Contracts
         Guid Id,
         Guid UserId,
         DateTime Date,
-        string Status,
+        OrderStatus Status,
         double Amount
         );
 }

@@ -4,16 +4,21 @@ using kursah_5semestr;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using System.Text;
+using System.Text.Json;
 
-const string KEY = "Bkwnhxz1jRyaJ8OBmS3YuJfGVvg13UYP5iQt8pluGuzOOHpWWthMcBJkwGYX89Mu";
 const string ISSUER = "my-auth-service";
 const string AUDIENCE = "my-application";
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    var enumConverter = new JsonStringEnumConverter(JsonNamingPolicy.CamelCase);
+    options.JsonSerializerOptions.Converters.Add(enumConverter);
+
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -27,6 +32,8 @@ builder.Services.AddSingleton<IDataUpdaterService, DataUpdaterService>();
 
 builder.Services.AddAuthentication().AddJwtBearer(jwtOptions =>
 {
+    var key = File.ReadAllText("./key.dat");
+
     jwtOptions.Audience = AUDIENCE;
     jwtOptions.TokenValidationParameters = new TokenValidationParameters
     {
@@ -36,7 +43,7 @@ builder.Services.AddAuthentication().AddJwtBearer(jwtOptions =>
         ValidateIssuerSigningKey = true,
         ValidAudience = AUDIENCE,
         ValidIssuer = ISSUER,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(KEY))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
     };
 });
 

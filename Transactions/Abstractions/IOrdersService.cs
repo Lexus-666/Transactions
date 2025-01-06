@@ -4,7 +4,7 @@
     {
         public Task<Order> CreateOrder(Order order);
 
-        public Task<Order?> UpdateOrderStatus(Guid id, string status);
+        public Task<Order?> UpdateOrderStatus(Guid id, OrderStatus status);
 
         public Task<Order?> GetOrderById(Guid id);
 

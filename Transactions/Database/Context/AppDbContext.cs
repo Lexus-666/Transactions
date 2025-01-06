@@ -42,6 +42,8 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("Transactions_OrderId_fkey");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.Property(e => e.Status).HasConversion<string>();
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -62,6 +64,8 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("Orders_UserId_fkey");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.Property(e => e.Status).HasConversion<string>();
         });
 
         OnModelCreatingPartial(modelBuilder);

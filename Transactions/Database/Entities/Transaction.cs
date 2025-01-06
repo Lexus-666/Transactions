@@ -19,7 +19,7 @@ public partial class Transaction
 
     public double Amount { get; set; }
 
-    public string Status { get; set; }
+    public TransactionStatus Status { get; set; }
 
     public DateTime CreatedAt {  get; set; }
 

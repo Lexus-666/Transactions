@@ -17,11 +17,13 @@ namespace kursah_5semestr.Contracts
     {
         private ITransactionsService _transactionsService;
         private IUsersService _usersService;
+        private ILogger _logger;
 
-        public TransactionsController(ITransactionsService transactionsService, IUsersService usersService)
+        public TransactionsController(ITransactionsService transactionsService, IUsersService usersService, ILogger<TransactionsController> logger)
         {
             _transactionsService = transactionsService;
             _usersService = usersService;
+            _logger = logger;
         }
 
         private TransactionOutDto ToDto(Transaction transaction)
@@ -49,6 +51,7 @@ namespace kursah_5semestr.Contracts
             var user = Utils.GetAuthenticatedUser(HttpContext, _usersService);
             if (user == null)
             {
+                _logger.LogError("User session information not found");
                 return Unauthorized(new StatusOutDto("error"));
             }
             var transactions = await _transactionsService.GetTransactionsByUser(user.Id);
@@ -62,6 +65,7 @@ namespace kursah_5semestr.Contracts
             var transaction = await _transactionsService.GetTransactionById(id);
             if (transaction == null)
             {
+                _logger.LogError($"Transaction {id} not found");
                 return NotFound(new StatusOutDto("error", "Transaction not found"));
             }
             return Ok(ToDto(transaction));
@@ -74,16 +78,19 @@ namespace kursah_5semestr.Contracts
             var transaction = await _transactionsService.GetTransactionById(id);
             if (transaction == null)
             {
+                _logger.LogError($"Transaction {id} not found");
                 return NotFound(new StatusOutDto("error", "Transaction not found"));
             }
-            if (transaction.Status != "new")
+            if (transaction.Status != TransactionStatus.New)
             {
-                return BadRequest(new StatusOutDto("error", $"Cannot delete a transaction with status '{transaction.Status}'"));
+                _logger.LogError($"Could not delete transaction {id} with status '{transaction.Status}'");
+                return BadRequest(new StatusOutDto("error", $"Cannot delete a transaction with status other than 'new'"));
             }
             var success = await _transactionsService.DeleteTransaction(id);
             if (!success)
             {
-                return NotFound(new StatusOutDto("error", "Transaction not found"));
+                _logger.LogError($"Could not delete transaction {id}");
+                return NotFound(new StatusOutDto("error"));
             }
 
             return Ok(new StatusOutDto("ok"));
@@ -96,15 +103,18 @@ namespace kursah_5semestr.Contracts
             var transaction = await _transactionsService.GetTransactionById(id);
             if (transaction == null)
             {
+                _logger.LogError($"Transaction {id} not found");
                 return NotFound(new StatusOutDto("error", "Transaction not found"));
             }
-            if (transaction.Status != "new")
+            if (transaction.Status != TransactionStatus.New)
             {
-                return BadRequest(new StatusOutDto("error", $"Cannot pay a transaction with status '{transaction.Status}'"));
+                _logger.LogError($"Transaction {id} with status '{transaction.Status}' could not be paid");
+                return BadRequest(new StatusOutDto("error", $"Cannot pay a transaction with status other than 'new'"));
             }
-            var success = await _transactionsService.UpdateTransactionStatus(id, "paid");
+            var success = await _transactionsService.UpdateTransactionStatus(id, TransactionStatus.Paid);
             if (!success)
             {
+                _logger.LogError($"Transaction {id} could not be paid");
                 return NotFound(new StatusOutDto("error", "Transaction could not be paid"));
             }
 

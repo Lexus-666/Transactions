@@ -4,7 +4,7 @@
     {
         public Task<Transaction> CreateTransaction(Transaction Transaction);
 
-        public Task<bool> UpdateTransactionStatus(Guid id, string status);
+        public Task<bool> UpdateTransactionStatus(Guid id, TransactionStatus status);
 
         public Task<Transaction?> GetTransactionById(Guid id);
 

@@ -7,22 +7,25 @@ namespace kursah_5semestr.Services
     {
         private AppDbContext _context;
         private IOrdersService _ordersService;
+        private ILogger _logger;
 
-        public TransactionsService(AppDbContext context, IOrdersService ordersService)
+        public TransactionsService(AppDbContext context, IOrdersService ordersService, ILogger<TransactionsService> logger)
         {
             _context = context;
             _ordersService = ordersService;
+            _logger = logger;
         }
 
         public async Task<Transaction> CreateTransaction(Transaction transaction)
         {
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Created transaction {transaction.Id}");
             return transaction;
         }
 
 
-        public async Task<bool> UpdateTransactionStatus(Guid id, string newStatus)
+        public async Task<bool> UpdateTransactionStatus(Guid id, TransactionStatus newStatus)
         {
             using (var tx = _context.Database.BeginTransaction())
             {
@@ -31,6 +34,7 @@ namespace kursah_5semestr.Services
                     var transaction = await _context.Transactions.FindAsync(id);
                     if (transaction == null)
                     {
+                        _logger.LogInformation($"Transaction {id} not found");
                         return false;
                     }
 
@@ -38,16 +42,18 @@ namespace kursah_5semestr.Services
                     transaction.PaidAt = DateTime.UtcNow;
                     _context.Transactions.Update(transaction);
                     await _context.SaveChangesAsync();
-                    if (newStatus == "paid")
+                    if (newStatus == TransactionStatus.Paid)
                     {
-                        await _ordersService.UpdateOrderStatus(transaction.OrderId, "paid");
+                        await _ordersService.UpdateOrderStatus(transaction.OrderId, OrderStatus.Paid);
                     }
                     tx.Commit();
+                    _logger.LogInformation($"Updated transaction {id} status");
                     return true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     tx.Rollback();
+                    _logger.LogError(ex, $"Error updating transaction {id} status");
                     return false;
                 }
             }
@@ -82,11 +88,13 @@ namespace kursah_5semestr.Services
             var transaction = await _context.Transactions.FindAsync(id);
             if (transaction == null)
             {
+                _logger.LogInformation($"Transaction {id} not found");
                 return false;
             }
 
             _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Deleted transaction {id}");
 
             return true;
         }

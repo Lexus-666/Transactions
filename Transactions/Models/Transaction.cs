@@ -11,7 +11,7 @@ public partial class Transaction
         UserId = userId;
         OrderId = orderId;
         Amount = amount;
-        Status = "new";
+        Status = TransactionStatus.New;
         CreatedAt = DateTime.UtcNow;
     }
 

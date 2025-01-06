@@ -6,7 +6,7 @@ public partial class Order
 {
     public Order() { }
 
-    private Order(Guid id, DateTime date, Guid userId, string status, double amount)
+    private Order(Guid id, DateTime date, Guid userId, OrderStatus status, double amount)
     {
         Id = id;
         UserId = userId;
@@ -15,7 +15,7 @@ public partial class Order
         Amount = amount;
     }
 
-    private static string BasicCheck(double amount, string status)
+    private static string BasicCheck(double amount, OrderStatus status)
     {
         var error = string.Empty;
 
@@ -23,15 +23,11 @@ public partial class Order
         {
             error = $"Amount must be greater than zero";
         }
-        else if (string.IsNullOrWhiteSpace(status))
-        {
-            error = "Status cannot be empty or null.";
-        }
 
         return error;
     }
 
-    public static (Order? Order, string Error) Create(Guid id, DateTime date, Guid userId, string status, double amount)
+    public static (Order? Order, string Error) Create(Guid id, DateTime date, Guid userId, OrderStatus status, double amount)
     {
         var error = BasicCheck(amount, status);
 

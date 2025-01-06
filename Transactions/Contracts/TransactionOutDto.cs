@@ -4,7 +4,7 @@ namespace kursah_5semestr.Contracts
 {
     public record TransactionOutDto(
         Guid Id,
-        string Status,
+        TransactionStatus Status,
         OrderOutDto Order,
         string TransactionDetails,
         DateTime CreatedAt,
